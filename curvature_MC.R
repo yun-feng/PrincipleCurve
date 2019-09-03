@@ -1,19 +1,19 @@
-t=(1:1000)/1000
+t=(1:100)/100
 
 #t=floor(rnorm(100,mean=0.5,sd=0.2)*100)/100
 #t[1:50]=floor(rnorm(50,mean=0.3,sd=0.1)*100)/100
 #t[51:100]=floor(rnorm(50,mean=0.6,sd=0.1)*100)/100
-v=2*pi
+v=1.8*pi
 x<-cos(v*t)
 y<-sin(v*t)
 #x=v*t
 #y=v*t
-data<-matrix(0,2,1000)
-data[1,]=x+rnorm(1000,0,0.1)
-data[2,]=y+rnorm(1000,0,0.1)
+data<-matrix(0,2,100)
+data[1,]=x#+rnorm(1000,0,0.1)
+data[2,]=y#+rnorm(1000,0,0.1)
 
-full_data=data
-data=full_data[,sample.int(1000,100)]
+#full_data=data
+#data=full_data[,sample.int(1000,100)]
 
 x_0=c(0,0)
 
@@ -39,9 +39,22 @@ prob_t=matrix(runif(100*N),nrow=100,ncol=N)
 prob_t=prob_t/apply(prob_t,1,sum)
 x=matrix(nrow=2,ncol=N)
 tc=apply(data,1,mean)
-rho=1
+rho_0=100
 plot(temp_data[1,],temp_data[2,],xlim=c(-1.5,1.5),ylim=c(-1.5,1.5))
+
+temp_x=x_0
+prob_t[,1]=exp(-20*apply((data-temp_x)^2,2,sum))
+x[,1]=x_0
+for( i in 2:N){
+  temp_x=temp_x+alpha[,i-1]/N
+  x[,i]=temp_x
+  prob_t[,i]=exp(-20*apply((data-temp_x)^2,2,sum))
+}
+prob_t=prob_t/apply(prob_t,1,sum)
+
 for ( c in 1:1000){
+  xc=apply(t(x)*apply(prob_t,2,sum),2,sum)/100
+  x_0=x_0+(tc-xc)
   temp_x=x_0
   prob_t[,1]=exp(-20*apply((data-temp_x)^2,2,sum))
   x[,1]=x_0
@@ -51,10 +64,10 @@ for ( c in 1:1000){
     prob_t[,i]=exp(-20*apply((data-temp_x)^2,2,sum))
   }
   prob_t=prob_t/apply(prob_t,1,sum)
-  xc=apply(t(x)*apply(prob_t,2,sum),2,sum)/100
-  x_0=x_0+(tc-xc)
   
+ 
   for(bc in 1:1){
+    rho=(1/rho_delta)/2/N
     K=100
     h=0
     temp_x=x_0
@@ -73,6 +86,7 @@ for ( c in 1:1000){
     end_flag=0
     
     for(i in 2:(N-1)){
+      rho=(1/rho_delta)/2/N
         temp_x=temp_x+alpha[,i-1]/N
         h=h-apply(t(data-temp_x)*prob_t[,i],2,sum)
         K=K-sum(prob_t[,i])
@@ -108,7 +122,8 @@ for ( c in 1:1000){
     }
     
     
-    "
+    
+  "
     for(i in 2:(N-1)){
       temp_x=temp_x+alpha[,i-1]/N
       h=h-apply(t(data-temp_x)*prob_t[,i],2,sum)
@@ -155,10 +170,21 @@ for ( c in 1:1000){
     
     
     "
+  
   }  
 
   
-  
+  xc=apply(t(x)*apply(prob_t,2,sum),2,sum)/100
+  x_0=x_0+(tc-xc)
+  temp_x=x_0
+  prob_t[,1]=exp(-20*apply((data-temp_x)^2,2,sum))
+  x[,1]=x_0
+  for( i in 2:N){
+    temp_x=temp_x+alpha[,i-1]/N
+    x[,i]=temp_x
+    prob_t[,i]=exp(-20*apply((data-temp_x)^2,2,sum))
+  }
+  prob_t=prob_t/apply(prob_t,1,sum)
  
   
    n=runif(2)
@@ -166,14 +192,33 @@ for ( c in 1:1000){
     ori=n
     temp_l=x-x_0
     temp_h=data-x_0
-    S=-temp_l%*%t(prob_t)%*%t(temp_h)
-    n=max(abs(S))*n
-    n=n+S%*%ori-2*ori*sum(ori*S%*%ori)-t(S)%*%ori
+    S=-temp_l[,2:N]%*%t(prob_t[,2:N])%*%t(temp_h)
+    S=S-2*ori%*%t(ori)%*%S+t(S)-2*t(S)%*%ori%*%t(ori)
+    n=2*sum(abs(S))*n+S%*%n
+    #n=n+S%*%ori-2*ori*sum(ori*(S%*%ori))-t(S)%*%ori
     n=n/sqrt(sum(n^2))
     alpha=(diag(c(1,1))-2*n%*%t(n))%*%(diag(c(1,1))-2*ori%*%t(ori))%*%alpha
+    x[,2:N]=x_0+((diag(c(1,1))-2*n%*%t(n))%*%(diag(c(1,1))-2*ori%*%t(ori))%*%temp_l)[,2:N]
   
-  
-  
+    rho_delta=0.0001*N
+    temp_x=x_0
+  for(i in 2:(N-1)){
+    n=runif(2)
+    n=n/sqrt(sum(n^2))
+    ori=n
+    temp_x=temp_x+alpha[,i-1]/N
+    temp_l=x-temp_x
+    temp_h=data-temp_x
+    S=-temp_l[,(i+1):N]%*%t(prob_t[,(i+1):N])%*%t(temp_h)
+    S=S-rho_delta*alpha[,i]%*%t(alpha[,i-1])
+    n=2*sum(abs(S))*n
+    n=n+S%*%ori-2*ori*sum(ori*(S%*%ori))-t(S)%*%ori
+    n=n/sqrt(sum(n^2))
+    alpha[,i:N]=(diag(c(1,1))-2*n%*%t(n))%*%(diag(c(1,1))-2*ori%*%t(ori))%*%alpha[,i:N]
+    x[,(i+1):N]=temp_x+((diag(c(1,1))-2*n%*%t(n))%*%(diag(c(1,1))-2*ori%*%t(ori))%*%temp_l)[,(i+1):N]
+    
+  }
+  alpha[,N]=alpha[,N-1]
   
   
   
@@ -183,3 +228,4 @@ for ( c in 1:1000){
 }
 
 plot(data[1,],data[2,],xlim=c(-1.5,1.5),ylim=c(-1.5,1.5))
+plot(density(apply(t(prob_t)*((1:N)/N),2,sum)))
