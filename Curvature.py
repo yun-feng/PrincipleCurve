@@ -44,7 +44,7 @@ dist=np.zeros((N,Interval,K))
 pseudotime_prob=np.random.random((N,Interval,K))
 pseudotime_prob/=pseudotime_prob.sum(1)[:,np.newaxis,:]
 
-for cycle in range(1):
+for cycle in range(10):
 	dist=np.square(data[:,np.newaxis,:,np.newaxis]-x[np.newaxis,:,:,:]).sum(2)
 	
 	softmin_val_t=dist.min(1)
@@ -74,7 +74,7 @@ for cycle in range(1):
 		for i in range(Interval):
 			#Linear loss 
 			S=-((x[np.newaxis,i:,:,k]-pivot_x)*z[:,np.newaxis,np.newaxis,k]*pseudotime_prob[:,i:,np.newaxis,k]).sum(1)
-			S=(S[:,:,np.newaxis]*data[:,np.newaxis,:]).sum(0)#np.dot(S.transpose(),data)
+			S=(S[:,:,np.newaxis]*(data[:,np.newaxis,:]-pivot_x)).sum(0)#np.dot(S.transpose(),data)
 			if i>0:
 				S-=rho_delta*alpha[i,:,k,np.newaxis]*alpha[np.newaxis,i-1,:,k]
 			#random direction
@@ -85,7 +85,7 @@ for cycle in range(1):
 			n=np.sum(np.abs(S))*n+np.dot(S,n)
 			n/=np.sqrt(np.square(n).sum())
 			#Orthonomal matirx
-			Rotate_P=-2*ori[:,np.newaxis]*ori[np.newaxis,:]+4*np.sum(ori*n)*ori[:,np.newaxis]*n[np.newaxis,:]
+			Rotate_P=-2*ori[:,np.newaxis]*ori[np.newaxis,:]-2*n[:,np.newaxis]*n[np.newaxis,:]+4*np.sum(ori*n)*ori[:,np.newaxis]*n[np.newaxis,:]
 			alpha[i:,:,k]=alpha[i:,:,k]+np.dot(alpha[i:,:,k],Rotate_P)
 			x[i:,:,k]=x[i:,:,k]+np.dot(x[i:,:,k]-pivot_x,Rotate_P)
 			
