@@ -26,6 +26,11 @@ rho=(1/rho_delta)/2/N
 K=2
 #Guassian mixture variance
 sigma=15
+#regularization parameters for model selection
+k1=10
+k2=1
+reg=10
+
 
 #Variables
 #origin for each curve
@@ -44,25 +49,33 @@ dist=np.zeros((N,Interval,K))
 pseudotime_prob=np.random.random((N,Interval,K))
 pseudotime_prob/=pseudotime_prob.sum(1)[:,np.newaxis,:]
 
-for cycle in range(10):
+for cycle in range(100):
 	dist=np.square(data[:,np.newaxis,:,np.newaxis]-x[np.newaxis,:,:,:]).sum(2)
 	
 	softmin_val_t=dist.min(1)
 	pseudotime_prob=np.exp((-dist+softmin_val_t[:,np.newaxis,:])/sigma)
 	
 	
-	group_loss=np.log(pseudotime_prob.sum(1))-softmin_val_t
-	softmin_val_group=group_loss.max(1)
-	group_loss-=softmin_val_group
-
+	group_loss=-np.log(pseudotime_prob.sum(1))+softmin_val_t
+	softmin_val_group=group_loss.min(1)
+	group_loss-=softmin_val_group[:,np.newaxis]
 	
 	pseudotime_prob/=pseudotime_prob.sum(1)[:,np.newaxis,:]
 	
+	group_L2=np.sqrt((np.square(z)).sum(0))
 	
-	
-	
+	Loss=(z*group_loss).sum()+(z*np.log(z)).sum()+softmin_val_group.sum()-reg*np.log(1+k1*np.exp(-k2*group_L2)).sum()
 	Loss+=rho_delta*np.square(np.diff(alpha,axis=0)).sum()
 	print(Loss)
+	
+	group_reg=reg*(k1*np.exp(-k2*group_L2))/(1.0+k1*np.exp(-k2*group_L2))*k2/(2*group_L2)
+	max_weight=group_reg.max()
+	dual_varaible=group_reg*z-max_weight-max_weight*np.log(z)
+	z=np.exp(-(group_loss+2*dual_varaible)/(1+2*max_weight))
+	z/=z.sum(1)[:,np.newaxis]
+	
+	
+	
 	#optimize x_ori
 	data_center=(data[:,:,np.newaxis]*z[:,np.newaxis,:]).sum(0)
 	x_center=(x[np.newaxis,:,:,:]*z[:,np.newaxis,np.newaxis,:]*pseudotime_prob[:,:,np.newaxis,:]).sum((0,1))
