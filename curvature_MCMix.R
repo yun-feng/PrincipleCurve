@@ -112,12 +112,12 @@ for ( c in 1:1000){
   
   #Er=Er/(2*rho*N)
   Er=Er*rho_delta
-  Er=Er+sum(-log(Er1+Er2))
+  Er=Er+sum(-log(Er1+Er2))*1/t_act
   print(Er)
   
   
   
-  
+  '
   
     K=sum(z)
     h=0
@@ -245,7 +245,7 @@ for ( c in 1:1000){
     prob_t2=exp(prob_t2)
     prob_t2=prob_t2/apply(prob_t2,1,sum)
     
-  
+  '
   n=runif(2)
   n=n/sqrt(sum(n^2))
   ori=n

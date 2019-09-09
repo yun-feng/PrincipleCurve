@@ -7,6 +7,29 @@ data=np.zeros((100,2))
 data[:,0]=np.cos(np.pi*np.array(range(100))/100.0)
 data[:,1]=np.sin(np.pi*np.array(range(100))/100.0)
 
+#linear separable case
+#parameters sigma=0.01
+#k1=5
+#k2=0.5
+#reg=40
+#K=2 or 3
+#or more strigently k2=1 reg=50
+data[:,0]=np.array(range(100))/100.0
+data[50:100,0]=np.array(range(50))/100.0
+data[:,1]=2*np.array(range(100))/100.0
+data[50:100,1]=-2*np.array(range(50))/100.0
+
+#half circles
+#parameters sigma=0.05
+#k1=8
+#k2=1
+#reg=80
+#K=2 or 3
+data=np.zeros((200,2))
+data[:100,0]=np.cos(np.pi*np.array(range(100))/100.0)
+data[:100,1]=np.sin(np.pi*np.array(range(100))/100.0)
+data[100:200,0]=np.cos(np.pi*np.array(range(100))/100.0)
+data[100:200,1]=1-np.sin(np.pi*np.array(range(100))/100.0)
 
 #number of datapoints
 N=data.shape[0]
@@ -23,13 +46,13 @@ Interval=250
 rho_delta=1e-2*Interval
 rho=(1/rho_delta)/2/*Interval
 #number of clusters
-K=2
+K=3
 #Guassian mixture variance
-sigma=15
+sigma=0.05
 #regularization parameters for model selection
-k1=10
-k2=0.5
-reg=10
+k1=8
+k2=1
+reg=80
 
 
 #Variables
@@ -49,7 +72,7 @@ dist=np.zeros((N,Interval,K))
 pseudotime_prob=np.random.random((N,Interval,K))
 pseudotime_prob/=pseudotime_prob.sum(1)[:,np.newaxis,:]
 
-for cycle in range(100):
+for cycle in range(300):
 	dist=np.square(data[:,np.newaxis,:,np.newaxis]-x[np.newaxis,:,:,:]).sum(2)
 	
 	softmin_val_t=dist.min(1)
