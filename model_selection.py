@@ -20,15 +20,15 @@ vel=np.pi
 #number of intervals each curve divided into
 Interval=250
 #curvature regularizer
-rho_delta=1e-2*N
-rho=(1/rho_delta)/2/N
+rho_delta=1e-2*Interval
+rho=(1/rho_delta)/2/*Interval
 #number of clusters
 K=2
 #Guassian mixture variance
 sigma=15
 #regularization parameters for model selection
 k1=10
-k2=1
+k2=0.5
 reg=10
 
 
@@ -39,7 +39,7 @@ x_ori=np.random.random((P,K))
 alpha=np.ones((Interval,P,K))*np.random.random((P,K))
 alpha/=np.sqrt((np.square(alpha)).sum(1))[:,np.newaxis,:]/vel
 #curve points position
-x=np.zeros((Interval,P,K))+x_ori+np.cumsum(alpha,axis=0)*1.0/N
+x=np.zeros((Interval,P,K))+x_ori+np.cumsum(alpha,axis=0)*1.0/Interval
 #clustering probabilities
 z=np.random.random((N,K))
 z/=z.sum(1)[:,np.newaxis]
@@ -56,7 +56,7 @@ for cycle in range(100):
 	pseudotime_prob=np.exp((-dist+softmin_val_t[:,np.newaxis,:])/sigma)
 	
 	
-	group_loss=-np.log(pseudotime_prob.sum(1))+softmin_val_t
+	group_loss=-np.log(pseudotime_prob.sum(1))+softmin_val_t/sigma
 	softmin_val_group=group_loss.min(1)
 	group_loss-=softmin_val_group[:,np.newaxis]
 	
@@ -65,6 +65,7 @@ for cycle in range(100):
 	group_L2=np.sqrt((np.square(z)).sum(0))
 	
 	Loss=(z*group_loss).sum()+(z*np.log(z)).sum()+softmin_val_group.sum()-reg*np.log(1+k1*np.exp(-k2*group_L2)).sum()
+	Loss*=sigma
 	Loss+=rho_delta*np.square(np.diff(alpha,axis=0)).sum()
 	print(Loss)
 	
@@ -105,4 +106,4 @@ for cycle in range(100):
 			alpha[i:,:,k]=alpha[i:,:,k]+np.dot(alpha[i:,:,k],Rotate_P)
 			x[i:,:,k]=x[i:,:,k]+np.dot(x[i:,:,k]-pivot_x,Rotate_P)
 			
-			pivot_x=pivot_x+alpha[i,:,k]*1.0/N
+			pivot_x=pivot_x+alpha[i,:,k]*1.0/Interval
