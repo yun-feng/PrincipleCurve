@@ -66,7 +66,7 @@ rho_delta=1e-2*N
 #crossing square
 #rho_delta=9e-3*N
 #t_act=6
-rho=(1/rho_delta)/2/N
+rho=(1/rho_delta)/N
 
 for ( c in 1:1000){
   
@@ -117,7 +117,7 @@ for ( c in 1:1000){
   
   
   
-  '
+  
   
     K=sum(z)
     h=0
@@ -127,7 +127,8 @@ for ( c in 1:1000){
     
     alpha_0=alpha1[,1]
     l=h+K*alpha_0*1/N
-    alpha1[,1]=0*alpha1[,1]+sum(alpha1[,2]*alpha1[,1])*alpha1[,2]+rho*l
+    #alpha1[,1]=0*alpha1[,1]+sum(alpha1[,2]*alpha1[,1])*alpha1[,2]+rho*l
+    alpha1[,1]=alpha1[,2]+rho*l
     alpha1[,1]=alpha1[,1]/sum(alpha1[,1]*alpha1[,1])^0.5*v
     h=h-c((alpha1[,1]-alpha_0)/N)*K
     
@@ -140,11 +141,12 @@ for ( c in 1:1000){
       
       alpha_0=alpha1[,i]
       l=h+K*alpha_0/N
-      alpha1[,i]=-0*alpha1[,i]+
-        sum(alpha1[,i+1]*alpha1[,i])*alpha1[,i+1]+
-        sum(alpha1[,i-1]*alpha1[,i])*alpha1[,i-1]+rho*l
-      #alpha1[,i]=alpha1[,i]/sum(alpha1[,i]*alpha1[,i])^0.5*v
-      
+      #alpha1[,i]=-0*alpha1[,i]+
+       # sum(alpha1[,i+1]*alpha1[,i])*alpha1[,i+1]+
+        #sum(alpha1[,i-1]*alpha1[,i])*alpha1[,i-1]+rho*l
+      alpha1[,i]=alpha1[,i+1]+alpha1[,i-1]+rho*l
+      alpha1[,i]=alpha1[,i]/sum(alpha1[,i]*alpha1[,i])^0.5*v
+      "
       lambda=v+abs(sum(alpha1[,i+1]*alpha1[,i-1]))/v
       if(sum(alpha1[,i]*alpha1[,i])^0.5 >= lambda){
         alpha1[,i]=alpha1[,i]/sum(alpha1[,i]*alpha1[,i])^0.5*v
@@ -152,11 +154,10 @@ for ( c in 1:1000){
       else{
         
         alpha1[,i]=alpha_0
-        print("wow")
         
       }
       
-      
+      "
       
       h=h-c((alpha1[,i]-alpha_0)/N)*K
       
@@ -174,7 +175,8 @@ for ( c in 1:1000){
     
     alpha_0=alpha2[,1]
     l=h+K*alpha_0*1/N
-    alpha2[,1]=0*alpha2[,1]+sum(alpha2[,2]*alpha2[,1])*alpha2[,2]+rho*l
+   # alpha2[,1]=0*alpha2[,1]+sum(alpha2[,2]*alpha2[,1])*alpha2[,2]+rho*l
+    alpha2[,1]=alpha2[,2]+rho*l
     alpha2[,1]=alpha2[,1]/sum(alpha2[,1]*alpha2[,1])^0.5*v
     h=h-c((alpha2[,1]-alpha_0)/N)*K
     
@@ -188,11 +190,12 @@ for ( c in 1:1000){
       
       alpha_0=alpha2[,i]
       l=h+K*alpha_0/N
-      alpha2[,i]=-0*alpha2[,i]+
-        sum(alpha2[,i+1]*alpha2[,i])*alpha2[,i+1]+
-        sum(alpha2[,i-1]*alpha2[,i])*alpha2[,i-1]+rho*l
-      #alpha2[,i]=alpha2[,i]/sum(alpha2[,i]*alpha2[,i])^0.5*v
-      
+      #alpha2[,i]=-0*alpha2[,i]+
+       # sum(alpha2[,i+1]*alpha2[,i])*alpha2[,i+1]+
+      #  sum(alpha2[,i-1]*alpha2[,i])*alpha2[,i-1]+rho*l
+      alpha2[,i]=alpha2[,i+1]+alpha2[,i-1]+rho*l
+      alpha2[,i]=alpha2[,i]/sum(alpha2[,i]*alpha2[,i])^0.5*v
+      "
       lambda=v+abs(sum(alpha2[,i+1]*alpha2[,i-1]))/v
       if(sum(alpha2[,i]*alpha2[,i])^0.5 >= lambda){
         alpha2[,i]=alpha2[,i]/sum(alpha2[,i]*alpha2[,i])^0.5*v
@@ -203,7 +206,7 @@ for ( c in 1:1000){
         
         
       }
-      
+      "
       h=h-c((alpha2[,i]-alpha_0)/N)*K
       
       la<-cbind(la,l)
@@ -245,7 +248,7 @@ for ( c in 1:1000){
     prob_t2=exp(prob_t2)
     prob_t2=prob_t2/apply(prob_t2,1,sum)
     
-  '
+  
   n=runif(2)
   n=n/sqrt(sum(n^2))
   ori=n
@@ -260,7 +263,7 @@ for ( c in 1:1000){
   alpha1=(diag(c(1,1))-2*n%*%t(n))%*%(diag(c(1,1))-2*ori%*%t(ori))%*%alpha1
   
   x1[,2:N]=x1_0+((diag(c(1,1))-2*n%*%t(n))%*%(diag(c(1,1))-2*ori%*%t(ori))%*%temp_l)[,2:N]
-  
+  '
   
   temp_x=x1_0
   for(i in 2:(N-1)){
@@ -281,7 +284,7 @@ for ( c in 1:1000){
     x1[,(i+1):N]=temp_x+((diag(c(1,1))-2*n%*%t(n))%*%(diag(c(1,1))-2*ori%*%t(ori))%*%temp_l)[,(i+1):N]
     
   }
-  
+  '
 
   
   
@@ -299,7 +302,7 @@ for ( c in 1:1000){
   alpha2=(diag(c(1,1))-2*n%*%t(n))%*%(diag(c(1,1))-2*ori%*%t(ori))%*%alpha2
   
   x2[,2:N]=x2_0+((diag(c(1,1))-2*n%*%t(n))%*%(diag(c(1,1))-2*ori%*%t(ori))%*%temp_l)[,2:N]
-  
+  '
   temp_x=x2_0
   for(i in 2:(N-1)){
     n=runif(2)
@@ -321,7 +324,7 @@ for ( c in 1:1000){
   }
   
   
-  
+  '
   
   tc1=apply(t(data)*z,2,sum)/sum(z)
   tc2=apply(t(data)*(1-z),2,sum)/sum(1-z)
