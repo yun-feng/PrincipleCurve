@@ -29,7 +29,7 @@ data=np.zeros((200,2))
 data[:100,0]=np.cos(np.pi*np.array(range(100))/100.0)
 data[:100,1]=np.sin(np.pi*np.array(range(100))/100.0)
 data[100:200,0]=np.cos(np.pi*np.array(range(100))/100.0)
-data[100:200,1]=1-np.sin(np.pi*np.array(range(100))/100.0)
+data[100:200,1]=np.sin(np.pi*np.array(range(100))/100.0)
 
 #number of datapoints
 N=data.shape[0]
@@ -43,7 +43,7 @@ vel=np.pi
 #number of intervals each curve divided into
 Interval=250
 #curvature regularizer
-rho_delta=2e-2*Interval
+rho_delta=1e-2*Interval
 rho=(1/rho_delta)/2/Interval
 #number of clusters
 K=3
@@ -52,11 +52,11 @@ K=3
 sigma=0.1
 #regularization parameters for model selection
 #tradeoff between uniform distribution and laplacian distribution
-k1=1e4
+k1=1e8
 #tradeoff between cluster size differences
-k2=2
+k2=4
 #tradeoff between data fitting and number of curves
-reg=20
+reg=30
 
 
 #Variables
