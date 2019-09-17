@@ -43,16 +43,20 @@ vel=np.pi
 #number of intervals each curve divided into
 Interval=250
 #curvature regularizer
-rho_delta=1e-2*Interval
-rho=(1/rho_delta)/2/*Interval
+rho_delta=2e-2*Interval
+rho=(1/rho_delta)/2/Interval
 #number of clusters
 K=3
 #Guassian mixture variance
-sigma=0.05
+#tradeoff between data fitting errors
+sigma=0.1
 #regularization parameters for model selection
-k1=8
-k2=1
-reg=80
+#tradeoff between uniform distribution and laplacian distribution
+k1=1e4
+#tradeoff between cluster size differences
+k2=2
+#tradeoff between data fitting and number of curves
+reg=20
 
 
 #Variables
@@ -72,7 +76,7 @@ dist=np.zeros((N,Interval,K))
 pseudotime_prob=np.random.random((N,Interval,K))
 pseudotime_prob/=pseudotime_prob.sum(1)[:,np.newaxis,:]
 
-for cycle in range(300):
+for cycle in range(1000):
 	dist=np.square(data[:,np.newaxis,:,np.newaxis]-x[np.newaxis,:,:,:]).sum(2)
 	
 	softmin_val_t=dist.min(1)
@@ -130,3 +134,6 @@ for cycle in range(300):
 			x[i:,:,k]=x[i:,:,k]+np.dot(x[i:,:,k]-pivot_x,Rotate_P)
 			
 			pivot_x=pivot_x+alpha[i,:,k]*1.0/Interval
+
+np.savetxt("/cygdrive/c/pseudo/x1.txt",x[:,:,1], fmt='%.18e',delimiter='\t')
+np.savetxt("/cygdrive/c/pseudo/x2.txt",x[:,:,2], fmt='%.18e',delimiter='\t')

@@ -263,7 +263,7 @@ for ( c in 1:1000){
   alpha1=(diag(c(1,1))-2*n%*%t(n))%*%(diag(c(1,1))-2*ori%*%t(ori))%*%alpha1
   
   x1[,2:N]=x1_0+((diag(c(1,1))-2*n%*%t(n))%*%(diag(c(1,1))-2*ori%*%t(ori))%*%temp_l)[,2:N]
-  '
+  
   
   temp_x=x1_0
   for(i in 2:(N-1)){
@@ -284,7 +284,7 @@ for ( c in 1:1000){
     x1[,(i+1):N]=temp_x+((diag(c(1,1))-2*n%*%t(n))%*%(diag(c(1,1))-2*ori%*%t(ori))%*%temp_l)[,(i+1):N]
     
   }
-  '
+  
 
   
   
@@ -302,7 +302,7 @@ for ( c in 1:1000){
   alpha2=(diag(c(1,1))-2*n%*%t(n))%*%(diag(c(1,1))-2*ori%*%t(ori))%*%alpha2
   
   x2[,2:N]=x2_0+((diag(c(1,1))-2*n%*%t(n))%*%(diag(c(1,1))-2*ori%*%t(ori))%*%temp_l)[,2:N]
-  '
+  
   temp_x=x2_0
   for(i in 2:(N-1)){
     n=runif(2)
@@ -324,7 +324,7 @@ for ( c in 1:1000){
   }
   
   
-  '
+  
   
   tc1=apply(t(data)*z,2,sum)/sum(z)
   tc2=apply(t(data)*(1-z),2,sum)/sum(1-z)
