@@ -46,17 +46,17 @@ Interval=250
 rho_delta=1e-2*Interval
 rho=(1/rho_delta)/2/Interval
 #number of clusters
-K=3
+K=4
 #Guassian mixture variance
 #tradeoff between data fitting errors
-sigma=0.1
+sigma=0.05
 #regularization parameters for model selection
 #tradeoff between uniform distribution and laplacian distribution
-k1=1e8
+log_k1=10
 #tradeoff between cluster size differences
-k2=4
+k2=3
 #tradeoff between data fitting and number of curves
-reg=5
+reg=1e3
 
 
 #Variables
@@ -78,7 +78,32 @@ pseudotime_prob/=pseudotime_prob.sum(1)[:,np.newaxis,:]
 
 for cycle in range(1000):
 	
-	if(cycle>0 and np.min(group_L2)<0.02*200):
+	dist=np.square(data[:,np.newaxis,:,np.newaxis]-x[np.newaxis,:,:,:]).sum(2)
+	
+	softmin_val_t=dist.min(1)
+	pseudotime_prob=np.exp((-dist+softmin_val_t[:,np.newaxis,:])/sigma)
+	
+	
+	group_loss=-np.log(pseudotime_prob.sum(1))+softmin_val_t/sigma
+	softmin_val_group=group_loss.min(1)
+	group_loss-=softmin_val_group[:,np.newaxis]
+	
+	pseudotime_prob/=pseudotime_prob.sum(1)[:,np.newaxis,:]
+	
+	group_L2=np.sqrt((np.square(z)).sum(0))
+	
+	Loss=(z*group_loss).sum()+(z*np.log(z)).sum()+softmin_val_group.sum()-reg*np.log(1+np.exp(log_k1-k2*group_L2)).sum()
+	Loss*=sigma
+	Loss+=rho_delta*np.square(np.diff(alpha,axis=0)).sum()
+	print(str(K)+":"+str(Loss)+":"+str(z.sum(0)))
+	
+	group_reg=reg*(np.exp(log_k1-k2*group_L2))/(1.0+np.exp(log_k1-k2*group_L2))*k2/(2*group_L2)
+	max_weight=group_reg.max()
+	dual_varaible=group_reg*z-max_weight-max_weight*np.log(z)
+	z=np.exp(-(group_loss+2*dual_varaible)/(1+2*max_weight))
+	z/=z.sum(1)[:,np.newaxis]
+	
+	if(cycle>0 and np.min(z.sum(0))<0.05*200):
 		K-=1
 		
 		x_ori=np.random.random((P,K))
@@ -96,30 +121,6 @@ for cycle in range(1000):
 		pseudotime_prob=np.random.random((N,Interval,K))
 		pseudotime_prob/=pseudotime_prob.sum(1)[:,np.newaxis,:]
 	
-	dist=np.square(data[:,np.newaxis,:,np.newaxis]-x[np.newaxis,:,:,:]).sum(2)
-	
-	softmin_val_t=dist.min(1)
-	pseudotime_prob=np.exp((-dist+softmin_val_t[:,np.newaxis,:])/sigma)
-	
-	
-	group_loss=-np.log(pseudotime_prob.sum(1))+softmin_val_t/sigma
-	softmin_val_group=group_loss.min(1)
-	group_loss-=softmin_val_group[:,np.newaxis]
-	
-	pseudotime_prob/=pseudotime_prob.sum(1)[:,np.newaxis,:]
-	
-	group_L2=np.sqrt((np.square(z)).sum(0))
-	
-	Loss=(z*group_loss).sum()+(z*np.log(z)).sum()+softmin_val_group.sum()-reg*np.log(1+k1*np.exp(-k2*group_L2)).sum()
-	Loss*=sigma
-	Loss+=rho_delta*np.square(np.diff(alpha,axis=0)).sum()
-	print(str(K)+":"+str(Loss))
-	
-	group_reg=reg*(k1*np.exp(-k2*group_L2))/(1.0+k1*np.exp(-k2*group_L2))*k2/(2*group_L2)
-	max_weight=group_reg.max()
-	dual_varaible=group_reg*z-max_weight-max_weight*np.log(z)
-	z=np.exp(-(group_loss+2*dual_varaible)/(1+2*max_weight))
-	z/=z.sum(1)[:,np.newaxis]
 	
 	
 	
